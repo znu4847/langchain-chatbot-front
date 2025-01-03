@@ -8,31 +8,19 @@ const socket = ref(null)
 const chatDisabled = ref(false)
 
 async function sendMessage() {
-  // if (!socket.value) {
-  //   return
-  // }
-
-  // // check socket is open
-  // if (socket.value.readyState !== WebSocket.OPEN) {
-  //   console.error('socket is not open')
-  //   return
-  // }
+  if (!socket.value) {
+    return
+  }
 
   // send message to the server
-  // socket.value.send(JSON.stringify({ type: 'human', message: message.value }))
-
   console.log('send message:', message.value)
+  socket.value.send(JSON.stringify({ type: 'human', message: message.value }))
 
   messages.value.push({
     type: 'sent',
     text: message.value,
   })
-  messages.value.push({
-    type: 'received',
-    text: 'Bot response',
-  })
   message.value = ''
-  // chatDisabled.value = true
 }
 
 function handleKeyDown(event) {
@@ -43,26 +31,32 @@ function handleKeyDown(event) {
 }
 
 onMounted(() => {
-  // socket.value = new WebSocket('ws://localhost:8000/ws/v1/chat/1/1/?token=test_token&user_id=1')
-  // socket.value.onopen = (event) => {
-  //   try {
-  //     const data = JSON.parse(event.data)
-  //     if (data.pending) {
-  //       pendingMessage.value = data.message
-  //     } else {
-  //       chatDisabled.value = false
-  //       messages.value.push({
-  //         type: 'received',
-  //         text: pendingMessage.value,
-  //       })
-  //       pendingMessage.value = ''
-  //       return
-  //     }
-  //   } catch (e) {
-  //     console.error(e)
-  //     chatDisabled.value = false
-  //   }
-  // }
+  socket.value = new WebSocket('ws://localhost:8000/ws/v1/chat/?token=test_token&user_id=1')
+  socket.value.onmessage = (event) => {
+    try {
+      console.log('socket onmessage')
+      if (!event.data) {
+        console.log('no data')
+        return
+      }
+
+      const data = JSON.parse(event.data)
+      if (data.pending) {
+        pendingMessage.value = data.message
+      } else {
+        chatDisabled.value = false
+        messages.value.push({
+          type: 'received',
+          text: pendingMessage.value,
+        })
+        pendingMessage.value = ''
+        return
+      }
+    } catch (e) {
+      console.error(e)
+      chatDisabled.value = false
+    }
+  }
 })
 
 onUnmounted(() => {
