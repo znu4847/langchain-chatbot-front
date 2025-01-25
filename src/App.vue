@@ -1,12 +1,6 @@
 <script setup>
 import { RouterView } from 'vue-router'
-import { computed } from 'vue'
 import AppConversations from './components/AppConversations.vue'
-import { useConversationStore } from './stores/conversation'
-
-const conversationStore = useConversationStore()
-
-const conversation = computed(() => conversationStore.pk)
 </script>
 
 <template>
@@ -60,7 +54,6 @@ const conversation = computed(() => conversationStore.pk)
           variant="solo-filled"
           flat
           hide-details
-          :value="conversation"
         ></v-text-field>
       </v-responsive>
     </v-app-bar>
