@@ -14,9 +14,7 @@ export const useMessageStore = defineStore('message', {
         return []
       }
       this.conversation = conversation
-      console.log('fetching conversations...')
       const response = await get('/api/v1/messages/', { conversation: conversation })
-      console.log('GET: /conversations')
       if (response.data) {
         this.conversation = conversation
         this.items = response.data

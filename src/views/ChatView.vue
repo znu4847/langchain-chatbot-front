@@ -18,20 +18,23 @@ const messageStore = useMessageStore()
 
 const socket = ref(null)
 watch(conversation, async () => {
-  console.log('conversation.watch:: changed')
+  newMessage.value = ''
+  console.debug('conversation.watch:: changed')
   if (!conversation.value || conversation.value === -1) {
-    console.log('conversation.watch:: invalid conversation')
+    console.debug('conversation.watch:: invalid conversation')
     messageHistory.value = []
     return
   }
   messageHistory.value = await messageStore.fetch(conversation.value)
   socketInitialize(conversation.value)
+  await nextTick()
+  scrollToBottom()
 })
 
 function socketInitialize() {
-  console.log('socketInitialize:: changed')
+  console.debug('socketInitialize:: changed')
   if (socket.value) {
-    console.log('socketInitialize:: close socket')
+    console.debug('socketInitialize:: close socket')
     // close the connection when the component is unmounted
     socket.value.close()
   }
@@ -41,9 +44,9 @@ function socketInitialize() {
   )
   socket.value.onmessage = (event) => {
     try {
-      console.log('socket.onmessage:: ', event)
+      console.debug('socket.onmessage:: ', event)
       if (!event.data) {
-        console.log('no data')
+        console.debug('no data')
         return
       }
 
@@ -68,13 +71,13 @@ function socketInitialize() {
 }
 
 /*** functions ***/
-
 async function sendMessage() {
   if (!socket.value || newMessage.value.trim() === '') {
     return
   }
 
   // send message to the server
+  chatDisabled.value = true
   socket.value.send(JSON.stringify({ role: 'human', message: newMessage.value }))
 
   messageHistory.value.push({
@@ -88,8 +91,8 @@ async function sendMessage() {
 
 function handleKeyDown(event) {
   if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault()
     sendMessage()
+    event.preventDefault()
   }
 }
 

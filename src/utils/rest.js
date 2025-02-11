@@ -3,7 +3,7 @@ import { useUserStore } from '../stores/user'
 
 const server = 'http://localhost:8000'
 
-function template({ method, url, params, query, headers }) {
+async function template({ method, url, params, query, headers }) {
   if (!method || !url) {
     console.error('method and url are required')
     console.error(method)
@@ -23,19 +23,32 @@ function template({ method, url, params, query, headers }) {
     url = `/${url}`
   }
   console.log(`rest.template::`)
-  console.log(`method: ${method}`)
   console.log(`url: ${url}`)
-  console.log(`params: ${params}`)
+  console.log(`params:`)
+  console.log(params)
   console.log(`query: ${query}`)
 
-  if (params) {
-    console.log('post, put')
-    return method(`${server}${url}`, params, { headers })
-  } else if (query) {
-    console.log('get')
-    return method(`${server}${url}?${query}`, { headers })
-  } else {
-    return method(`${server}${url}`, { headers })
+  try {
+    if (params) {
+      console.log('post, put')
+      const response = await axios.post(`${server}${url}`, params, { headers })
+      return response
+      // return method(`${server}${url}`, params, { headers })
+    } else if (query) {
+      console.log('get')
+      return method(`${server}${url}?${query}`, { headers })
+    } else {
+      return method(`${server}${url}`, { headers })
+    }
+  } catch (error) {
+    // console.error(error)
+    const messages = error.response?.data?.errors || []
+    console.log(error.response)
+    if (messages.length > 0) {
+      alert(messages.join('\n'))
+    }
+    console.log(`AxiosError: message: ${messages}, status: ${error.status}`)
+    return error.response
   }
 }
 
@@ -46,8 +59,8 @@ export function get(url, params = {}) {
   return template({ method: axios.get, url, query })
 }
 
-export function post(url, params = {}) {
-  return template({ method: axios.post, url, params })
+export function post(url, params = {}, headers = null) {
+  return template({ method: axios.post, url, params, headers })
 }
 
 export function put(url, params = {}) {

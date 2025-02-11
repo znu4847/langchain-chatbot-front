@@ -1,44 +1,43 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useConversationStore } from '@/stores/conversation'
+import AppNewConversation from './AppNewConversation.vue'
 
 const store = useConversationStore()
 const items = ref([])
 const editItem = ref(null)
 const edit = ref(false)
 const editItemEmpty = { title: '' }
+const newDialog = ref(false)
+const selected = ref(null)
 
 async function select(item) {
   store.select(item.pk)
-  // if (item.pk === -1) {
-  //   console.log('new conversation')
-  //   // await store.create()
-  // } else {
-  //   store.select(item.pk)
-  // }
+  selected.value = item.pk
 }
 
 async function action({ pk, type }) {
-  console.log('action:: ', type, pk)
   if (type === 'delete') {
     await store.delete(pk)
     initialize()
   } else if (type === 'new') {
-    await store.create()
-    initialize()
+    newDialog.value = true
+    // await store.create()
+    // initialize()
   } else if (type === 'edit') {
     const item = store.get(pk)
-    console.log('is editable ? ', item)
     if (!item) {
-      console.log('item not found')
+      console.log('item not found : ', pk)
       return
     }
     edit.value = true
     editItem.value = { ...item }
   } else {
     console.log('unknown action : ', type)
+    return
   }
 }
+
 function initialize() {
   editItem.value = editItemEmpty
   items.value = [...store.items]
@@ -76,7 +75,7 @@ async function save() {
   initialize()
 }
 onMounted(() => {
-  console.log('App.vue::mounted')
+  console.log('AppConversations.vue::mounted')
   store.fetch().then(initialize)
 })
 </script>
@@ -87,7 +86,7 @@ onMounted(() => {
       height="128"
       width="100%"
     ></v-sheet>
-    <v-list>
+    <v-list v-model:selected="selected">
       <v-list-item
         v-for="item in items"
         :key="item.pk"
@@ -104,7 +103,7 @@ onMounted(() => {
             <v-btn
               variant="plain"
               :icon="actionItem.icon"
-              @click="action(actionItem)"
+              @click.stop="action(actionItem)"
             >
             </v-btn>
           </template>
@@ -140,4 +139,14 @@ onMounted(() => {
       </v-card>
     </v-dialog>
   </v-navigation-drawer>
+  <app-new-conversation
+    v-model="newDialog"
+    @update:conversation="
+      (conversation) => {
+        select(conversation)
+        initialize()
+      }
+    "
+  >
+  </app-new-conversation>
 </template>
