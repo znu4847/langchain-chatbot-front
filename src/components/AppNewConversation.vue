@@ -5,6 +5,11 @@ import { useLoadingStore } from '@/stores/loading'
 
 const store = useConversationStore()
 const loadingStore = useLoadingStore()
+const types = ref([
+  { value: 'pdf', text: 'PDF' },
+  { value: 'custom', text: 'Custom' },
+  { value: 'dummy', text: 'Dummy' },
+])
 
 // define models
 const emits = defineEmits(['update:modelValue', 'update:conversation'])
@@ -12,6 +17,8 @@ const model = defineModel()
 const localValue = ref(model)
 const form = reactive({
   title: '',
+  type: 'pdf',
+  system: '',
   file: null,
 })
 watch(model, (value) => {
@@ -64,13 +71,26 @@ function close() {
             v-model="form.title"
             label="Title"
           ></v-text-field>
+          <v-select
+            v-model="form.type"
+            :items="types"
+            item-title="text"
+            item-value="value"
+            label="Type"
+          />
         </v-card-text>
-        <v-card-text>
+        <v-card-text v-if="form.type === 'pdf'">
           <v-file-input
             v-model="form.file"
             label="Pdf"
             accept=".pdf"
           ></v-file-input>
+        </v-card-text>
+        <v-card-text v-else-if="form.type === 'custom'">
+          <v-text-field
+            v-model="form.system"
+            label="System Message"
+          ></v-text-field>
         </v-card-text>
         <v-card-actions>
           <v-btn

@@ -1,14 +1,6 @@
 import { defineStore, acceptHMRUpdate } from 'pinia'
 import { post } from '../utils/rest'
 
-// Data for Development.
-// const testUser = {
-//   token:
-//     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwayI6MiwidXNlcm5hbWUiOiJ0ZXN0X3VzZXIifQ.cmekmrCr98Us3r7nFPX0ozaAjby0PGVve1JOo-sQvqs',
-//   username: 'test_user',
-//   userId: 2,
-// }
-
 function getCookie(name) {
   const value = `; ${document.cookie}`
   const parts = value.split(`; ${name}=`)
@@ -83,7 +75,6 @@ export const useUserStore = defineStore('user', {
     },
     async initialize() {
       const token = getCookie('jwt')
-      console.debug('user.initialize::token: ' + token)
       if (!token) {
         return
       }
